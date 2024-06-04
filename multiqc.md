@@ -2,9 +2,9 @@
 
 ### create conda environment according to https://bioconda.github.io/recipes/multiqc/README.html#package-multiqc
 
-> module load miniconda3.9
+`module load miniconda3.9`
 
-### can omit
+> can omit
 `conda config --add channels defaults`
 `conda config --add channels bioconda`
 `conda config --add channels conda-forge`
