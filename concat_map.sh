@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=Build               # Partition/queue to run on
+#SBATCH --partition=128x24                # Partition/queue to run on
 #SBATCH --time=0-12:00:00                # Max time for job to run
 #SBATCH --job-name=bismark                  # Name for job (shows when running squeue)
 #SBATCH --mail-type=ALL                  # Mail events(NONE,BEGIN,END,FAIL,ALL)
