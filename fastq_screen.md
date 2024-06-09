@@ -11,11 +11,21 @@ unzip download
 `export PATH=/hb/groups/kelley_lab/tina/mytilus/Bismark-master/bismark:$PATH`
 
 ### running fastq screen
+
+#### running test dataset first
+
+#### download the dataset
+wget https://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/fastq_screen_test_dataset.tar.gz
+tar -xzf fastq_screen_test_dataset.tar.gz
+
+
+
 #### one example /hb/groups/kelley_lab/tina/mytilus/02_trim/final_trim/concat_lanes/12O-F_S66_R1_merged.fq.gz
 
-### need a configuration file (indicating path of genomes) to run Fastq screen
+### need a configuration file (indicating path of genomes) in the directory to run Fastq screen
 cd /hb/groups/kelley_lab/tina/mytilus/fastqc_screen/FastQ-Screen-0.15.3
-cat fastq_screen.conf
+cat fastq_screen.conf (see fastq_screen.config)
 
+### running Fastq screen for bisulfite data
 `FastQ-Screen-0.15.3/fastq_screen --bisulfite  /hb/groups/kelley_lab/tina/mytilus/02_trim/final_trim/concat_lanes/12O-F_S66_R1_merged.fq.gz`
 
