@@ -1,0 +1,90 @@
+
+process_bedgraph_files <- function(input_dir, output_dir, num_chromosomes = 20) {
+  # List all bedgraph files in the input directory
+  bedgraph_files <- list.files(input_dir, pattern = "\\.bedgraph$", full.names = TRUE)
+  
+  # Data frame to store summary statistics
+  summary_stats <- data.frame(Sample = character(),
+                              Max_Value = numeric(),
+                              Median_Value = numeric(),
+                              Mean_Value = numeric(),
+                              Top_95 = numeric(),
+                              sd = numeric(),
+                              outlier = numeric(),
+                              total_window = numeric(),
+                              outlier_3sd = numeric(),
+                              outlier_3sd_reads= numeric(),
+                              stringsAsFactors = FALSE)
+  
+  for (file in bedgraph_files) {
+    # Read the bedgraph file
+    bedgraph_data <- read_tsv(file, col_names = c("chrom", "start", "end", "value"))
+    
+    # Calculate chromosome lengths
+    chrom_length <- bedgraph_data %>%
+      group_by(chrom) %>%
+      summarize(chrom_length = max(end) - min(start))
+    
+    # Sum all unique reads across scaffolds
+    sum_reads <- bedgraph_data %>%
+      group_by(chrom) %>%
+      summarize(sum_reads = sum(value))
+    
+    # Merge the length and sum reads data
+    filtered_data_chr <- merge(sum_reads, chrom_length, by = "chrom", all.x = TRUE)
+    
+    # Merge with bedgraph data
+    merged_chr <- merge(filtered_data_chr, bedgraph_data, by = "chrom", all.x = TRUE)
+    
+    # Filter out chromosomes without reads
+    merged_chr <- merged_chr %>% filter(sum_reads != 0)
+    
+    # Order data by chromosome length
+    ordered_data <- merged_chr[order(merged_chr$chrom_length, decreasing = TRUE), ]
+    
+    # Select top chromosomes by length
+    subset_chromosomes <- unique(ordered_data$chrom)[1:num_chromosomes]
+    filtered_data_chr <- merged_chr %>%
+      filter(chrom %in% subset_chromosomes) %>%
+      arrange(desc(chrom_length))
+    
+    # Reorder chrom based on chrom_length
+    filtered_data_chr$chrom <- factor(filtered_data_chr$chrom,
+                                      levels = unique(filtered_data_chr$chrom[order(filtered_data_chr$chrom_length, decreasing = TRUE)]))
+    
+    # Extract sample name
+    sample_name <- tools::file_path_sans_ext(basename(file))
+    
+    # Calculate 3SD and determine if values are within or outside 3SD range
+    filtered_data_chr$three_sd <- mean_value + 3 * sd
+    filtered_data_chr$within_3sd <- ifelse(filtered_data_chr$value <= filtered_data_chr$three_sd, 1, 0)
+    
+    # Calculate max, median, mean, and top 95% values
+    max_value <- max(filtered_data_chr$value)
+    median_value <- median(filtered_data_chr$value)
+    mean_value <- mean(filtered_data_chr$value)
+    top_95_value <- quantile(filtered_data_chr$value, 0.95)
+    sd <- sd(filtered_data_chr$value)
+    outlier <- sum(filtered_data_chr$value > top_95_value)
+    total_window <- length(filtered_data_chr$value)
+    outlier_3sd <- sum(filtered_data_chr$value > 3 * sd + mean_value)
+   
+    # Append to summary statistics data frame
+    summary_stats <- rbind(summary_stats, data.frame(Sample = sample_name, 
+                                                     Max_Value = max_value, 
+                                                     Median_Value = median_value,
+                                                     Mean_Value = mean_value,
+                                                     Top_95 = top_95_value,
+                                                     sd = sd,
+                                                     outlier = outlier,
+                                                     total_window = total_window,
+                                                     outlier_3sd = outlier_3sd
+                                                     ))
+  }
+  
+  # Save the summary statistics to a CSV file
+  write.csv(summary_stats, file = file.path(output_dir, "full_summary_statistics.csv"), row.names = FALSE)
+}
+
+# Run the function
+process_bedgraph_files(input_dir, output_dir)
