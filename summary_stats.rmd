@@ -67,7 +67,9 @@ process_bedgraph_files <- function(input_dir, output_dir, num_chromosomes = 20) 
     sd <- sd(filtered_data_chr$value)
     outlier <- sum(filtered_data_chr$value > top_95_value)
     total_window <- length(filtered_data_chr$value)
-    outlier_3sd <- sum(filtered_data_chr$value > 3 * sd + mean_value)
+    outlier_3sd <- sum(filtered_data_chr$value > 3 * sd + mean_value) #sum total 1kb windows with values >3sd
+    outlier_3sd_reads <- sum(filtered_data_chr$value[filtered_data_chr$value > 3 * sd + mean_value]) #summarize total reads from all the 1kb windows with values >3sd
+   
    
     # Append to summary statistics data frame
     summary_stats <- rbind(summary_stats, data.frame(Sample = sample_name, 
@@ -78,7 +80,8 @@ process_bedgraph_files <- function(input_dir, output_dir, num_chromosomes = 20) 
                                                      sd = sd,
                                                      outlier = outlier,
                                                      total_window = total_window,
-                                                     outlier_3sd = outlier_3sd
+                                                     outlier_3sd = outlier_3sd,
+                                                     outlier_3sd_reads = outlier_3sd_reads
                                                      ))
   }
   
