@@ -1,6 +1,6 @@
-#To understand the sequenced reads more, below are scripts used for extracting library size of the data before and after trimming, as well as cytosine coverage from bam and coverage files
+# To understand the sequenced reads more, below are scripts used for extracting library size of the data before and after trimming, as well as cytosine coverage from bam and coverage files
 
-##getting library size (number of bases) from raw data and reads after 65bp trimmed:
+## getting library size (number of bases) from raw data and reads after 65bp trimmed:
 
 ```
 https://bioinf.shenwei.me/seqkit/download/
@@ -28,15 +28,16 @@ file	format	type	num_seqs	sum_len	min_len	avg_len	max_len
 
 ```
 
-#getting the positions of CGs in reference genome:
+# getting the positions of CGs in reference genome:
 
 ```
-###FIRST Getting the number of CGs in the reference genome using bismark bam2nuc
+FIRST Getting the number of CGs in the reference genome using bismark bam2nuc
 bam2nuc --genome_folder "$genome_folder" "$bam_file"
 
 genome_folder="/hb/groups/kelley_lab/tina/mytilus/ref_genome/GCF_021869535.1/"
 
 ```
+
 
 
 ```
@@ -254,10 +255,7 @@ output_csv <- "/Users/qcai/Documents/UCSC/Kelley_Lab/mytilus/cg_coverage_files/c
 write_csv(results_df, output_csv)
 
 
-#all stats output: https://docs.google.com/spreadsheets/d/1Dk6OWD8RvfzZCB_5r3vdp2GrWqkdKjiXGEAURNU_Eu0/edit?usp=sharing
-
-
 ```
 
-
+## all stats output: https://docs.google.com/spreadsheets/d/1Dk6OWD8RvfzZCB_5r3vdp2GrWqkdKjiXGEAURNU_Eu0/edit?usp=sharing
 
