@@ -77,3 +77,151 @@ pca_imputated_merged<- ggplot(imp_scores, aes(x = PC1, y = PC2, color = Tissue))
   )
 
 ggsave(filename = "pca_unfiltered_imputed_merged_rm_small_library.png",pca_imputated_merged)
+
+
+
+#after getting the csv of pca loading, load the csv into R and make graphs grouped by tissue & sites.
+
+
+#with imputated data
+imputated_data<-read_csv("/Users/qcai/Documents/UCSC/Kelley_Lab/mytilus/cg_coverage_files/imp_scores_pca_merged_rmoutlier.csv")
+  imputated_data<-as.data.frame(imputated_data)
+rownames(imputated_data) <-  imputated_data[,1]
+# Assuming imputated_data is your dataframe
+rownames(imputated_data) <- gsub("^X", "", rownames(imputated_data))
+
+
+imputated_data<-imputated_data[,-1]
+
+check_G_between <- function(x) {
+  # Find '.G_'
+  if (grepl("\\.G_", x)) {
+    return("Gill")
+  } else {
+    return("Foot")
+  }
+}
+
+# Add metadata
+imputated_data$Tissue <- sapply(row.names(imputated_data), check_G_between)
+
+
+
+# Plot the PCA impute results
+pca_imputated_merged<- ggplot(imputated_data, aes(x = PC1, y = PC2, color = Tissue)) +
+  geom_point(size = 2) +
+  theme_minimal() +
+  theme_classic() +
+  labs(
+    title = "prcomp() with imputated data merged",
+    x = "PC1",
+    y = "PC2"
+  )
+
+calculate_hull <- function(df) df[chull(df$PC1, df$PC2), ]
+
+
+# Calculate the convex hulls for each tissue group
+hulls <- imputated_data %>%
+  group_by(Tissue) %>%
+  do(calculate_hull(.))
+
+# Create the ggplot
+p <- ggplot(imputated_data, aes(x = PC1, y = PC2, color = Tissue)) +
+  geom_point(size = 2) +
+  geom_polygon(data = hulls, aes(x = PC1, y = PC2, fill = Tissue, group = Tissue), 
+               alpha = 0.3, linetype = 2, size = 0.5) +
+  theme_minimal() +
+  theme_classic() +
+  labs(
+    title = "prcomp() no NA values_unfiltered data merged",
+    x = "PC1",
+    y = "PC2"
+  )
+
+print(p)
+
+ggsave(filename = "pca_merged_rmoutlier.png", p)
+
+
+#for site specific
+imputated_data$sample_prefix <- sub("\\..*", "", rownames(imputated_data))
+
+
+# Function to transform sample names
+transform_sample_name <- function(name) {
+  # Replace the first dot with a dash
+  name <- sub("\\.", "-", name)
+  # Remove everything after the first underscore
+  name <- sub("\\.Me", "", name)
+  return(name)
+}
+
+# Apply the function to the sample_name column
+imputated_data$sample_name <- sapply(rownames(imputated_data), transform_sample_name)
+
+
+merged_filtered<-merge(imputated_data, meta_data, by = "sample_name", all.x = TRUE)
+
+
+
+merged_data$origin_site
+  
+# Plot the PCA impute results
+pca_imputated_merged<- ggplot(imputated_data, aes(x = PC1, y = PC2, color = Tissue)) +
+  geom_point(size = 2) +
+  theme_minimal() +
+  theme_classic() +
+  labs(
+    title = "prcomp() with imputated data merged",
+    x = "PC1",
+    y = "PC2"
+  )
+
+
+
+calculate_hull <- function(df) df[chull(df$PC1, df$PC2), ]
+
+
+#filtered data
+# Plot the PCA impute results
+ggplot(imputated_data, aes(x = PC1, y = PC2, color = Tissue)) +
+  geom_point(size = 2) +
+  theme_minimal() +
+  theme_classic() +
+  labs(
+    title = "prcomp() with imputated data",
+    x = "PC1",
+    y = "PC2"
+  )
+
+calculate_hull <- function(df) df[chull(df$PC1, df$PC2), ]
+
+# Calculate the convex hulls for each tissue group
+hulls <-merged_filtered %>%
+  group_by(origin_site) %>%
+  do(calculate_hull(.))
+merged_filtered$origin_site
+# Create the ggplot
+p <- ggplot(imputated_data, aes(x = PC1, y = PC2, color = Tissue)) +
+  geom_point(size = 2) +
+  # geom_line(aes(group = sample_prefix), color = "black", linetype = 1) +
+  #geom_text(aes(label = sample_prefix), hjust = 1.5, vjust = 1.5, size = 3, check_overlap = TRUE) +
+  geom_polygon(data = hulls, aes(x = PC1, y = PC2, fill = origin_site, group = origin_site), 
+               alpha = 0.3, linetype = 2, size = 0.5) +
+  theme_minimal() +
+  theme_classic() +
+  labs(
+    title = "pca_merged_rmoutlier_unfiltered_originsite",
+    x = "PC1",
+    y = "PC2"
+  )
+
+
+print(p)
+
+ggsave(filename = "pca_merged_rmoutlier_origin_unfiltered.png", p)
+
+
+
+
