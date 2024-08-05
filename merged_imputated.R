@@ -223,5 +223,13 @@ print(p)
 ggsave(filename = "pca_merged_rmoutlier_origin_unfiltered.png", p)
 
 
+#filtering 
+
+meta_data<-read.delim("sample_full.txt", row.names = "sample", stringsAsFactors = FALSE) %>%
+  na.omit()
+meta_data<-meta_data %>% 
+  rownames_to_column(var = "sample_name")
+
+
 
 
